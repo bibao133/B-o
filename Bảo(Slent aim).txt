@@ -1,24 +1,40 @@
-local OrionLib = loadstring(game:HttpGet(('https://githubusercontent.com')))()
-local Window = OrionLib:MakeWindow({Name = "Bao Menu", HidePremium = false, SaveConfig = true, ConfigFolder = "BaoConfig"})
+-- 1. Initialize Rayfield UI Library (New and Stable)
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu'))()
 
-local Tab = Window:MakeTab({
-    Name = "Features",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
+-- Create Window
+local Window = Rayfield:CreateWindow({
+   Name = "Bao Menu",
+   LoadingTitle = "Loading System...",
+   LoadingSubtitle = "by Bao",
+   ConfigurationSaving = {
+      Enabled = false
+   },
+   Discord = {
+      Enabled = false
+   },
+   KeySystem = false
 })
+
+-- 2. Create Tab
+local Tab = Window:CreateTab("Features", 4483345998)
+
+-- 3. State Configuration (Auto-enabled)
 local SilentAimEnabled = true
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
-Tab:AddToggle({
-    Name = "Bảo (Silent aim)",
-    Default = true,
-    Callback = function(Value)
-        SilentAimEnabled = Value
-    end    
+-- 4. Toggle Button for "Bảo (Silent aim)"
+local Toggle = Tab:CreateToggle({
+   Name = "Bảo (Silent aim)",
+   CurrentValue = true,
+   Flag = "SilentAimToggle",
+   Callback = function(Value)
+      SilentAimEnabled = Value
+   end,
 })
 
+-- 5. Target Scanning Function
 local function GetClosestPlayer()
     local ClosestTarget = nil
     local MaxDistance = math.huge
@@ -41,6 +57,7 @@ local function GetClosestPlayer()
     return ClosestTarget
 end
 
+-- 6. Silent Aim Logic
 local Namecall
 Namecall = hookmetamethod(game, "__namecall", function(Self, ...)
     local Args = {...}
@@ -58,4 +75,10 @@ Namecall = hookmetamethod(game, "__namecall", function(Self, ...)
     return Namecall(Self, ...)
 end)
 
-OrionLib:Init()
+-- Notify user that script loaded successfully
+Rayfield:Notify({
+   Title = "Success",
+   Content = "Bảo (Silent aim) has been auto-activated!",
+   Duration = 5,
+   Image = 4483345998,
+})
