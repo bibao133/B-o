@@ -1,0 +1,61 @@
+local OrionLib = loadstring(game:HttpGet(('https://githubusercontent.com')))()
+local Window = OrionLib:MakeWindow({Name = "Bao Menu", HidePremium = false, SaveConfig = true, ConfigFolder = "BaoConfig"})
+
+local Tab = Window:MakeTab({
+    Name = "Features",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+local SilentAimEnabled = true
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+
+Tab:AddToggle({
+    Name = "Bảo (Silent aim)",
+    Default = true,
+    Callback = function(Value)
+        SilentAimEnabled = Value
+    end    
+})
+
+local function GetClosestPlayer()
+    local ClosestTarget = nil
+    local MaxDistance = math.huge
+
+    for _, Player in pairs(Players:GetPlayers()) do
+        if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and Player.Character:FindFirstChild("Humanoid") and Player.Character.Humanoid.Health > 0 then
+            local Position, OnScreen = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(Player.Character.HumanoidRootPart.Position)
+            if OnScreen then
+                local MousePosition = Vector2.new(Mouse.X, Mouse.Y)
+                local TargetPosition = Vector2.new(Position.X, Position.Y)
+                local Distance = (MousePosition - TargetPosition).Magnitude
+                
+                if Distance < MaxDistance then
+                    ClosestTarget = Player.Character.HumanoidRootPart
+                    MaxDistance = Distance
+                end
+            end
+        end
+    end
+    return ClosestTarget
+end
+
+local Namecall
+Namecall = hookmetamethod(game, "__namecall", function(Self, ...)
+    local Args = {...}
+    local Method = getnamecallmethod()
+
+    if SilentAimEnabled and (Method == "FindPartOnRayWithIgnoreList" or Method == "FindPartOnRay") then
+        local Target = GetClosestPlayer()
+        if Target then
+            local Camera = game:GetService("Workspace").CurrentCamera
+            Args = Ray.new(Camera.CFrame.Position, (Target.Position - Camera.CFrame.Position).Unit * 1000)
+            return Namecall(Self, unpack(Args))
+        end
+    end
+
+    return Namecall(Self, ...)
+end)
+
+OrionLib:Init()
