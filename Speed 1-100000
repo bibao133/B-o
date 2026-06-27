@@ -1,0 +1,122 @@
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hum = char:WaitForChild("Humanoid")
+
+local speed = 16
+local maxSpeed = 100000
+local enabled = false
+
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.Parent = game.CoreGui
+
+local frame = Instance.new("Frame")
+frame.Parent = gui
+frame.Size = UDim2.new(0, 230, 0, 160)
+frame.Position = UDim2.new(0.4, 0, 0.4, 0)
+frame.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
+frame.BackgroundTransparency = 0.35
+frame.BorderSizePixel = 2
+frame.BorderColor3 = Color3.fromRGB(170, 0, 255)
+
+local title = Instance.new("TextLabel")
+title.Parent = frame
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Text = "speed ba9r"
+title.TextColor3 = Color3.fromRGB(255, 80, 80)
+title.BackgroundTransparency = 1
+
+local speedText = Instance.new("TextLabel")
+speedText.Parent = frame
+speedText.Size = UDim2.new(1, 0, 0, 25)
+speedText.Position = UDim2.new(0, 0, 0, 30)
+speedText.Text = "Speed: 16"
+speedText.TextColor3 = Color3.fromRGB(255,255,255)
+speedText.BackgroundTransparency = 1
+
+local toggle = Instance.new("TextButton")
+toggle.Parent = frame
+toggle.Size = UDim2.new(1, -20, 0, 40)
+toggle.Position = UDim2.new(0, 10, 0, 60)
+toggle.Text = "OFF"
+toggle.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+toggle.TextColor3 = Color3.fromRGB(255,255,255)
+
+local add = Instance.new("TextButton")
+add.Parent = frame
+add.Size = UDim2.new(0.5, -15, 0, 30)
+add.Position = UDim2.new(0, 10, 0, 110)
+add.Text = "+"
+
+local sub = Instance.new("TextButton")
+sub.Parent = frame
+sub.Size = UDim2.new(0.5, -15, 0, 30)
+sub.Position = UDim2.new(0.5, 5, 0, 110)
+sub.Text = "-"
+
+-- update speed
+local function update()
+	if enabled then
+		hum.WalkSpeed = speed
+	else
+		hum.WalkSpeed = 16
+	end
+	speedText.Text = "Speed: " .. math.floor(speed)
+end
+
+toggle.MouseButton1Click:Connect(function()
+	enabled = not enabled
+	toggle.Text = enabled and "ON" or "OFF"
+	update()
+end)
+
+add.MouseButton1Click:Connect(function()
+	speed = math.clamp(speed + 50, 16, maxSpeed)
+	update()
+end)
+
+sub.MouseButton1Click:Connect(function()
+	speed = math.clamp(speed - 50, 16, maxSpeed)
+	update()
+end)
+
+-- 🔥 DRAG UI (kéo thả)
+local UIS = game:GetService("UserInputService")
+
+local dragging = false
+local dragStart
+local startPos
+
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+	or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+	end
+end)
+
+frame.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - dragStart
+		frame.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+	or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
+
+-- respawn fix
+player.CharacterAdded:Connect(function(c)
+	char = c
+	hum = c:WaitForChild("Humanoid")
+end)
